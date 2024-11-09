@@ -1,0 +1,83 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model UserSettings {
+  id        String   @id @default(cuid())
+  userId    String
+  currency  String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Expense {
+  id          String        @id @default(cuid())
+  userId      String
+  title       String
+  amount      Float
+  description String?
+  date        DateTime
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+  ExpenseTags ExpenseTags[]
+  account     Account?      @relation(fields: [accountId], references: [id])
+  accountId   String?
+}
+
+model ExpenseTags {
+  id        String   @id @default(cuid())
+  expense   Expense  @relation(fields: [expenseId], references: [id])
+  tag       Tag      @relation(fields: [tagId], references: [id])
+  expenseId String
+  tagId     String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Tag {
+  id          String        @id @default(cuid())
+  userId      String
+  name        String
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+  ExpenseTags ExpenseTags[]
+
+  @@unique([userId, name])
+}
+
+model Account {
+  id          String    @id @default(cuid())
+  userId      String
+  name        String
+  balance     Float
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  expenses    Expense[]
+  incomes     Income[]
+
+  @@unique([userId, name])
+}
+
+model Income {
+  id          String    @id @default(cuid())
+  userId      String
+  title       String
+  amount      Float
+  description String?
+  date        DateTime
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  account     Account?  @relation(fields: [accountId], references: [id])
+  accountId   String?
+}
